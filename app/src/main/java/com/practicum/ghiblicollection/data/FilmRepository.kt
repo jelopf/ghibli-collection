@@ -3,7 +3,7 @@ package com.practicum.ghiblicollection.data
 import com.practicum.ghiblicollection.domain.model.Film
 import com.practicum.ghiblicollection.domain.repository.FilmRepository
 
-class FilmRepositoryImpl : FilmRepository {
+class FilmRepository : FilmRepository {
 
     private val films = listOf(
         Film(
