@@ -1,6 +1,8 @@
 package com.practicum.ghiblicollection.ui.detail
 
+import android.content.Intent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,13 +13,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -28,9 +35,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,6 +52,7 @@ import com.practicum.ghiblicollection.ui.theme.GhibliCollectionTheme
 @Composable
 fun FilmDetailScreen(
     filmId: String,
+    onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: FilmDetailViewModel = viewModel()
 ) {
@@ -53,14 +63,19 @@ fun FilmDetailScreen(
     }
 
     val currentFilm = film ?: return
-    FilmDetailContent(film = currentFilm, modifier = modifier)
+    FilmDetailContent(
+        film = currentFilm,
+        onBackClick = onBackClick,
+        modifier = modifier)
 }
 
 @Composable
 private fun FilmDetailContent(
     film: Film,
+    onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val backgroundColor = MaterialTheme.colorScheme.background
 
     Column(
@@ -68,7 +83,19 @@ private fun FilmDetailContent(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        HeroSection(film = film, backgroundColor = backgroundColor)
+        HeroSection(
+            film = film,
+            backgroundColor = backgroundColor,
+            onBackClick = onBackClick,
+            onShareClick = {
+                val shareText = "${film.title} (${film.releaseDate})\n\n${film.description}"
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, shareText)
+                }
+                context.startActivity(Intent.createChooser(intent, null))
+            }
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -98,6 +125,8 @@ private fun FilmDetailContent(
 private fun HeroSection(
     film: Film,
     backgroundColor: Color,
+    onBackClick: () -> Unit,
+    onShareClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val heroHeight = 260.dp
@@ -154,6 +183,53 @@ private fun HeroSection(
                 modifier = Modifier.fillMaxSize()
             )
         }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            FloatingIconButton(
+                onClick = onBackClick,
+                icon = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Назад",
+                        tint = Color.White
+                    )
+                }
+            )
+
+            FloatingIconButton(
+                onClick = onShareClick,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Поделиться",
+                        tint = Color.White
+                    )
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun FloatingIconButton(
+    onClick: () -> Unit,
+    icon: @Composable () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    IconButton(
+        onClick = onClick,
+        modifier = modifier
+            .clip(CircleShape)
+            .background(Color.Black.copy(alpha = 0.35f))
+            .border(0.5.dp, Color.White.copy(alpha = 0.2f), CircleShape)
+    ) {
+        icon()
     }
 }
 
@@ -275,7 +351,8 @@ private fun FilmDetailContentPreview() {
                 releaseDate = "2001",
                 runningTime = "124",
                 rtScore = "97"
-            )
+            ),
+            onBackClick = {}
         )
     }
 }

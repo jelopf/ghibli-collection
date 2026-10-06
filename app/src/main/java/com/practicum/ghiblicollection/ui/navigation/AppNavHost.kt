@@ -40,7 +40,10 @@ fun AppNavHost(
             )
         ) { backStackEntry ->
             val filmId = backStackEntry.arguments?.getString("filmId").orEmpty()
-            FilmDetailScreen(filmId = filmId)
+            FilmDetailScreen(
+                filmId = filmId,
+                onBackClick = { navController.popBackStack() }
+            )
         }
     }
 }
