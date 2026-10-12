@@ -2,27 +2,42 @@ package com.practicum.ghiblicollection.ui.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.practicum.ghiblicollection.domain.model.Film
-import com.practicum.ghiblicollection.data.FilmRepository
+import com.practicum.ghiblicollection.domain.usecase.GetFilmsUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.IOException
+import javax.inject.Inject
 
-class FilmListViewModel : ViewModel() {
+@HiltViewModel
+class FilmListViewModel @Inject constructor(
+    private val getFilmsUseCase: GetFilmsUseCase
+) : ViewModel() {
 
-    private val repository = FilmRepository()
-
-    private val _films = MutableStateFlow<List<Film>>(emptyList())
-    val films: StateFlow<List<Film>> = _films.asStateFlow()
+    private val _uiState = MutableStateFlow<FilmListUiState>(FilmListUiState.Loading)
+    val uiState: StateFlow<FilmListUiState> = _uiState.asStateFlow()
 
     init {
         loadFilms()
     }
 
-    private fun loadFilms() {
+    fun loadFilms() {
         viewModelScope.launch {
-            _films.value = repository.getFilms()
+            _uiState.value = FilmListUiState.Loading
+            try {
+                val films = getFilmsUseCase()
+                _uiState.value = FilmListUiState.Success(films)
+            } catch (e: IOException) {
+                _uiState.value = FilmListUiState.Error(
+                    "Проблема с сетью. Проверьте интернет-соединение."
+                )
+            } catch (e: Exception) {
+                _uiState.value = FilmListUiState.Error(
+                    e.localizedMessage ?: "Не удалось загрузить список"
+                )
+            }
         }
     }
 }

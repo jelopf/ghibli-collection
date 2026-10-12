@@ -44,9 +44,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.practicum.ghiblicollection.domain.model.Film
+import com.practicum.ghiblicollection.ui.components.ErrorState
+import com.practicum.ghiblicollection.ui.components.LoadingState
 import com.practicum.ghiblicollection.ui.theme.GhibliCollectionTheme
 
 @Composable
@@ -54,19 +56,27 @@ fun FilmDetailScreen(
     filmId: String,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: FilmDetailViewModel = viewModel()
+    viewModel: FilmDetailViewModel = hiltViewModel()
 ) {
-    val film by viewModel.film.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(filmId) {
         viewModel.loadFilm(filmId)
     }
 
-    val currentFilm = film ?: return
-    FilmDetailContent(
-        film = currentFilm,
-        onBackClick = onBackClick,
-        modifier = modifier)
+    when (val state = uiState) {
+        is FilmDetailUiState.Loading -> LoadingState(modifier)
+        is FilmDetailUiState.Success -> FilmDetailContent(
+            film = state.film,
+            onBackClick = onBackClick,
+            modifier = modifier
+        )
+        is FilmDetailUiState.Error -> ErrorState(
+            message = state.message,
+            onRetry = { viewModel.loadFilm(filmId) },
+            modifier = modifier
+        )
+    }
 }
 
 @Composable
