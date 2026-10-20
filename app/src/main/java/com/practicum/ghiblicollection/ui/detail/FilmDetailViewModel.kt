@@ -3,6 +3,7 @@ package com.practicum.ghiblicollection.ui.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.practicum.ghiblicollection.domain.model.Film
+import com.practicum.ghiblicollection.domain.usecase.GetFavoriteByIdUseCase
 import com.practicum.ghiblicollection.domain.usecase.GetFilmByIdUseCase
 import com.practicum.ghiblicollection.domain.usecase.IsFavoriteUseCase
 import com.practicum.ghiblicollection.domain.usecase.ToggleFavoriteUseCase
@@ -17,6 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class FilmDetailViewModel @Inject constructor(
     private val getFilmByIdUseCase: GetFilmByIdUseCase,
+    private val getFavoriteByIdUseCase: GetFavoriteByIdUseCase,
     private val isFavoriteUseCase: IsFavoriteUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase
 ) : ViewModel() {
@@ -32,6 +34,15 @@ class FilmDetailViewModel @Inject constructor(
     fun loadFilm(filmId: String) {
         viewModelScope.launch {
             _uiState.value = FilmDetailUiState.Loading
+
+            val favorite = getFavoriteByIdUseCase(filmId)
+            if (favorite != null) {
+                currentFilm = favorite
+                _uiState.value = FilmDetailUiState.Success(favorite)
+                observeFavorite(filmId)
+                return@launch
+            }
+
             try {
                 val film = getFilmByIdUseCase(filmId)
                 currentFilm = film
