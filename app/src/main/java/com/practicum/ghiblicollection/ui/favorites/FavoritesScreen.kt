@@ -2,6 +2,7 @@ package com.practicum.ghiblicollection.ui.favorites
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -48,22 +49,19 @@ private fun FavoritesContent(
     onFilmClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(title = { Text("Избранное") })
-        }
-    ) { innerPadding ->
+    Column(modifier = modifier.fillMaxSize()) {
+        TopAppBar(title = { Text("Избранное") })
+
         when (uiState) {
-            is FavoritesUiState.Loading -> LoadingState(Modifier.padding(innerPadding))
+            is FavoritesUiState.Loading -> LoadingState(Modifier.weight(1f))
             is FavoritesUiState.Success -> {
                 if (uiState.films.isEmpty()) {
-                    EmptyFavorites(modifier = Modifier.padding(innerPadding))
+                    EmptyFavorites(modifier = Modifier.weight(1f))
                 } else {
                     FavoritesList(
                         films = uiState.films,
                         onFilmClick = onFilmClick,
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }

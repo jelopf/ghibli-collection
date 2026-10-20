@@ -2,13 +2,17 @@ package com.practicum.ghiblicollection.ui.list
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,9 +43,11 @@ fun FilmListScreen(
     viewModel: FilmListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val hasActiveFilters by viewModel.hasActiveFilters.collectAsState()
 
     FilmListContent(
         uiState = uiState,
+        hasActiveFilters = hasActiveFilters,
         onFilmClick = onFilmClick,
         onRetry = { viewModel.loadFilms() },
         onFilterClick = onFilterClick,
@@ -53,17 +59,25 @@ fun FilmListScreen(
 @Composable
 private fun FilmListContent(
     uiState: FilmListUiState,
+    hasActiveFilters: Boolean,
     onFilmClick: (String) -> Unit,
     onRetry: () -> Unit,
     onFilterClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = { Text("Фильмы") },
-                actions = {
+    Column(modifier = modifier.fillMaxSize()) {
+        TopAppBar(
+            title = { Text("Фильмы") },
+            actions = {
+                BadgedBox(
+                    badge = {
+                        if (hasActiveFilters) {
+                            Badge(
+                                modifier = Modifier.offset(x = (-15).dp, y = 10.dp)
+                            )
+                        }
+                    }
+                ) {
                     IconButton(onClick = onFilterClick) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
@@ -71,20 +85,20 @@ private fun FilmListContent(
                         )
                     }
                 }
-            )
-        }
-    ) { innerPadding ->
+            }
+        )
+
         when (uiState) {
-            is FilmListUiState.Loading -> LoadingState(Modifier.padding(innerPadding))
+            is FilmListUiState.Loading -> LoadingState(Modifier.weight(1f))
             is FilmListUiState.Success -> FilmsList(
                 films = uiState.films,
                 onFilmClick = onFilmClick,
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier.weight(1f)
             )
             is FilmListUiState.Error -> ErrorState(
                 message = uiState.message,
                 onRetry = onRetry,
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier.weight(1f)
             )
         }
     }
@@ -170,6 +184,7 @@ private fun FilmListContentSuccessPreview() {
             uiState = FilmListUiState.Success(previewFilms),
             onFilmClick = {},
             onRetry = {},
+            hasActiveFilters = false,
             onFilterClick = {}
         )
     }
@@ -183,6 +198,7 @@ private fun FilmListContentEmptyPreview() {
             uiState = FilmListUiState.Success(emptyList()),
             onFilmClick = {},
             onRetry = {},
+            hasActiveFilters = true,
             onFilterClick = {}
         )
     }
@@ -196,6 +212,7 @@ private fun FilmListContentLoadingPreview() {
             uiState = FilmListUiState.Loading,
             onFilmClick = {},
             onRetry = {},
+            hasActiveFilters = true,
             onFilterClick = {}
         )
     }
@@ -209,6 +226,7 @@ private fun FilmListContentErrorPreview() {
             uiState = FilmListUiState.Error("Проблема с сетью"),
             onFilmClick = {},
             onRetry = {},
+            hasActiveFilters = false,
             onFilterClick = {}
         )
     }

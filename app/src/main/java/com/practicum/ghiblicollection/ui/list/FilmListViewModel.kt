@@ -2,6 +2,7 @@ package com.practicum.ghiblicollection.ui.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.practicum.ghiblicollection.data.cache.FilterBadgeCache
 import com.practicum.ghiblicollection.domain.model.Film
 import com.practicum.ghiblicollection.domain.model.FilmFilter
 import com.practicum.ghiblicollection.domain.usecase.FilterFilmsUseCase
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.io.IOException
 import javax.inject.Inject
@@ -20,11 +22,14 @@ import javax.inject.Inject
 class FilmListViewModel @Inject constructor(
     private val getFilmsUseCase: GetFilmsUseCase,
     private val getFilterUseCase: GetFilterUseCase,
-    private val filterFilmsUseCase: FilterFilmsUseCase
+    private val filterFilmsUseCase: FilterFilmsUseCase,
+    private val badgeCache: FilterBadgeCache
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<FilmListUiState>(FilmListUiState.Loading)
     val uiState: StateFlow<FilmListUiState> = _uiState.asStateFlow()
+
+    val hasActiveFilters: StateFlow<Boolean> = badgeCache.hasActiveFilters
 
     private var allFilms: List<Film> = emptyList()
     private var currentFilter: FilmFilter = FilmFilter.EMPTY
@@ -32,6 +37,7 @@ class FilmListViewModel @Inject constructor(
     init {
         observeFilter()
         loadFilms()
+        syncBadge()
     }
 
     private fun observeFilter() {
@@ -67,5 +73,12 @@ class FilmListViewModel @Inject constructor(
         }
         val filtered = filterFilmsUseCase(allFilms, currentFilter)
         _uiState.value = FilmListUiState.Success(filtered)
+    }
+
+    private fun syncBadge() {
+        viewModelScope.launch {
+            val filter = getFilterUseCase().first()
+            badgeCache.setHasActiveFilters(filter.isActive)
+        }
     }
 }

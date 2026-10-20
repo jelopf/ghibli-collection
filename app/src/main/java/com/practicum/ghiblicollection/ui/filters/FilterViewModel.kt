@@ -2,6 +2,7 @@ package com.practicum.ghiblicollection.ui.filters
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.practicum.ghiblicollection.data.cache.FilterBadgeCache
 import com.practicum.ghiblicollection.domain.model.FilmFilter
 import com.practicum.ghiblicollection.domain.usecase.ClearFilterUseCase
 import com.practicum.ghiblicollection.domain.usecase.GetFilterUseCase
@@ -18,7 +19,8 @@ import javax.inject.Inject
 class FilterViewModel @Inject constructor(
     private val getFilterUseCase: GetFilterUseCase,
     private val saveFilterUseCase: SaveFilterUseCase,
-    private val clearFilterUseCase: ClearFilterUseCase
+    private val clearFilterUseCase: ClearFilterUseCase,
+    private val badgeCache: FilterBadgeCache
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FilterUiState())
@@ -32,6 +34,7 @@ class FilterViewModel @Inject constructor(
         viewModelScope.launch {
             val current = getFilterUseCase().first()
             _uiState.value = FilterUiState.fromFilter(current)
+            badgeCache.setHasActiveFilters(current.isActive)
         }
     }
 
@@ -53,7 +56,9 @@ class FilterViewModel @Inject constructor(
 
     fun save() {
         viewModelScope.launch {
-            saveFilterUseCase(_uiState.value.toFilmFilter())
+            val filter = _uiState.value.toFilmFilter()
+            saveFilterUseCase(filter)
+            badgeCache.setHasActiveFilters(filter.isActive)
             _uiState.value = _uiState.value.copy(isSaved = true)
         }
     }
@@ -61,6 +66,7 @@ class FilterViewModel @Inject constructor(
     fun reset() {
         viewModelScope.launch {
             clearFilterUseCase()
+            badgeCache.setHasActiveFilters(false)
             _uiState.value = FilterUiState()
         }
     }
