@@ -21,6 +21,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
@@ -59,6 +61,7 @@ fun FilmDetailScreen(
     viewModel: FilmDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val isFavorite by viewModel.isFavorite.collectAsState()
 
     LaunchedEffect(filmId) {
         viewModel.loadFilm(filmId)
@@ -68,7 +71,9 @@ fun FilmDetailScreen(
         is FilmDetailUiState.Loading -> LoadingState(modifier)
         is FilmDetailUiState.Success -> FilmDetailContent(
             film = state.film,
+            isFavorite = isFavorite,
             onBackClick = onBackClick,
+            onToggleFavorite = viewModel::toggleFavorite,
             modifier = modifier
         )
         is FilmDetailUiState.Error -> ErrorState(
@@ -82,7 +87,9 @@ fun FilmDetailScreen(
 @Composable
 private fun FilmDetailContent(
     film: Film,
+    isFavorite: Boolean,
     onBackClick: () -> Unit,
+    onToggleFavorite: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -95,8 +102,10 @@ private fun FilmDetailContent(
     ) {
         HeroSection(
             film = film,
+            isFavorite = isFavorite,
             backgroundColor = backgroundColor,
             onBackClick = onBackClick,
+            onToggleFavorite = onToggleFavorite,
             onShareClick = {
                 val shareText = "${film.title} (${film.releaseDate})\n\n${film.description}"
                 val intent = Intent(Intent.ACTION_SEND).apply {
@@ -134,8 +143,10 @@ private fun FilmDetailContent(
 @Composable
 private fun HeroSection(
     film: Film,
+    isFavorite: Boolean,
     backgroundColor: Color,
     onBackClick: () -> Unit,
+    onToggleFavorite: () -> Unit,
     onShareClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -194,15 +205,15 @@ private fun HeroSection(
             )
         }
 
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .statusBarsPadding()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
             FloatingIconButton(
                 onClick = onBackClick,
+                modifier = Modifier.align(Alignment.TopStart),
                 icon = {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -212,16 +223,40 @@ private fun HeroSection(
                 }
             )
 
-            FloatingIconButton(
-                onClick = onShareClick,
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.Share,
-                        contentDescription = "Поделиться",
-                        tint = Color.White
-                    )
-                }
-            )
+            Column(
+                modifier = Modifier.align(Alignment.TopEnd),
+                horizontalAlignment = Alignment.End
+            ) {
+                FloatingIconButton(
+                    onClick = onShareClick,
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Поделиться",
+                            tint = Color.White
+                        )
+                    }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                FloatingIconButton(
+                    onClick = onToggleFavorite,
+                    icon = {
+                        Icon(
+                            imageVector = if (isFavorite) {
+                                Icons.Default.Favorite
+                            } else {
+                                Icons.Default.FavoriteBorder
+                            },
+                            contentDescription = if (isFavorite) {
+                                "Убрать из избранного"
+                            } else {
+                                "Добавить в избранное"
+                            },
+                            tint = Color.White
+                        )
+                    }
+                )
+            }
         }
     }
 }
@@ -362,7 +397,9 @@ private fun FilmDetailContentPreview() {
                 runningTime = "124",
                 rtScore = "97"
             ),
-            onBackClick = {}
+            isFavorite = true,
+            onBackClick = {},
+            onToggleFavorite = {}
         )
     }
 }

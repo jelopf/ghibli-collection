@@ -9,7 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.practicum.ghiblicollection.ui.detail.FilmDetailScreen
 import com.practicum.ghiblicollection.ui.filters.FilterScreen
-import com.practicum.ghiblicollection.ui.home.HomeScreen
+import com.practicum.ghiblicollection.ui.favorites.FavoritesScreen
 import com.practicum.ghiblicollection.ui.list.FilmListScreen
 
 @Composable
@@ -33,8 +33,12 @@ fun AppNavHost(
             )
         }
 
-        composable(Destinations.HOME) {
-            HomeScreen()
+        composable(Destinations.FAVORITES) {
+            FavoritesScreen(
+                onFilmClick = { filmId ->
+                    navController.navigate(Destinations.detailRoute(filmId))
+                }
+            )
         }
 
         composable(

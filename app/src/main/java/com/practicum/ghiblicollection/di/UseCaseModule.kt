@@ -1,13 +1,17 @@
 package com.practicum.ghiblicollection.di
 
+import com.practicum.ghiblicollection.domain.repository.FavoritesRepository
 import com.practicum.ghiblicollection.domain.repository.FilmRepository
 import com.practicum.ghiblicollection.domain.repository.FilterRepository
 import com.practicum.ghiblicollection.domain.usecase.ClearFilterUseCase
 import com.practicum.ghiblicollection.domain.usecase.FilterFilmsUseCase
+import com.practicum.ghiblicollection.domain.usecase.GetFavoritesUseCase
 import com.practicum.ghiblicollection.domain.usecase.GetFilmByIdUseCase
 import com.practicum.ghiblicollection.domain.usecase.GetFilmsUseCase
 import com.practicum.ghiblicollection.domain.usecase.GetFilterUseCase
+import com.practicum.ghiblicollection.domain.usecase.IsFavoriteUseCase
 import com.practicum.ghiblicollection.domain.usecase.SaveFilterUseCase
+import com.practicum.ghiblicollection.domain.usecase.ToggleFavoriteUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -40,4 +44,16 @@ object UseCaseModule {
     @Provides
     fun provideFilterFilmsUseCase(): FilterFilmsUseCase =
         FilterFilmsUseCase()
+
+    @Provides
+    fun provideGetFavoritesUseCase(repo: FavoritesRepository): GetFavoritesUseCase =
+        GetFavoritesUseCase(repo)
+
+    @Provides
+    fun provideIsFavoriteUseCase(repo: FavoritesRepository): IsFavoriteUseCase =
+        IsFavoriteUseCase(repo)
+
+    @Provides
+    fun provideToggleFavoriteUseCase(repo: FavoritesRepository): ToggleFavoriteUseCase =
+        ToggleFavoriteUseCase(repo)
 }
