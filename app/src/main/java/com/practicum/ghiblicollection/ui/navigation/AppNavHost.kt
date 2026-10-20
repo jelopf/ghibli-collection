@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.practicum.ghiblicollection.ui.detail.FilmDetailScreen
+import com.practicum.ghiblicollection.ui.filters.FilterScreen
 import com.practicum.ghiblicollection.ui.home.HomeScreen
 import com.practicum.ghiblicollection.ui.list.FilmListScreen
 
@@ -25,6 +26,9 @@ fun AppNavHost(
             FilmListScreen(
                 onFilmClick = { filmId ->
                     navController.navigate(Destinations.detailRoute(filmId))
+                },
+                onFilterClick = {
+                    navController.navigate(Destinations.FILTERS)
                 }
             )
         }
@@ -43,6 +47,13 @@ fun AppNavHost(
             FilmDetailScreen(
                 filmId = filmId,
                 onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(Destinations.FILTERS) {
+            FilterScreen(
+                onBack = { navController.popBackStack() },
+                onSaved = { navController.popBackStack() }
             )
         }
     }

@@ -1,14 +1,27 @@
 package com.practicum.ghiblicollection.ui.list
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -21,6 +34,7 @@ import com.practicum.ghiblicollection.ui.theme.GhibliCollectionTheme
 @Composable
 fun FilmListScreen(
     onFilmClick: (String) -> Unit,
+    onFilterClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: FilmListViewModel = hiltViewModel()
 ) {
@@ -30,29 +44,49 @@ fun FilmListScreen(
         uiState = uiState,
         onFilmClick = onFilmClick,
         onRetry = { viewModel.loadFilms() },
+        onFilterClick = onFilterClick,
         modifier = modifier
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FilmListContent(
     uiState: FilmListUiState,
     onFilmClick: (String) -> Unit,
     onRetry: () -> Unit,
+    onFilterClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    when (uiState) {
-        is FilmListUiState.Loading -> LoadingState(modifier)
-        is FilmListUiState.Success -> FilmsList(
-            films = uiState.films,
-            onFilmClick = onFilmClick,
-            modifier = modifier
-        )
-        is FilmListUiState.Error -> ErrorState(
-            message = uiState.message,
-            onRetry = onRetry,
-            modifier = modifier
-        )
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text("Фильмы") },
+                actions = {
+                    IconButton(onClick = onFilterClick) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "Фильтры"
+                        )
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        when (uiState) {
+            is FilmListUiState.Loading -> LoadingState(Modifier.padding(innerPadding))
+            is FilmListUiState.Success -> FilmsList(
+                films = uiState.films,
+                onFilmClick = onFilmClick,
+                modifier = Modifier.padding(innerPadding)
+            )
+            is FilmListUiState.Error -> ErrorState(
+                message = uiState.message,
+                onRetry = onRetry,
+                modifier = Modifier.padding(innerPadding)
+            )
+        }
     }
 }
 
@@ -62,6 +96,11 @@ private fun FilmsList(
     onFilmClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    if (films.isEmpty()) {
+        EmptyListState(modifier)
+        return
+    }
+
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(12.dp),
@@ -73,6 +112,21 @@ private fun FilmsList(
                 onClick = { onFilmClick(film.id) }
             )
         }
+    }
+}
+
+@Composable
+private fun EmptyListState(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Ничего не найдено. Попробуйте изменить фильтры.",
+            textAlign = TextAlign.Center
+        )
     }
 }
 
@@ -105,20 +159,6 @@ private val previewFilms = listOf(
         releaseDate = "1988",
         runningTime = "86",
         rtScore = "93"
-    ),
-    Film(
-        id = "3",
-        title = "Princess Mononoke",
-        originalTitle = "もののけ姫",
-        originalTitleRomanised = "Mononoke Hime",
-        image = "",
-        movieBanner = "",
-        description = "A prince journeys to the west to find a cure.",
-        director = "Hayao Miyazaki",
-        producer = "Toshio Suzuki",
-        releaseDate = "1997",
-        runningTime = "134",
-        rtScore = "93"
     )
 )
 
@@ -129,7 +169,21 @@ private fun FilmListContentSuccessPreview() {
         FilmListContent(
             uiState = FilmListUiState.Success(previewFilms),
             onFilmClick = {},
-            onRetry = {}
+            onRetry = {},
+            onFilterClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun FilmListContentEmptyPreview() {
+    GhibliCollectionTheme {
+        FilmListContent(
+            uiState = FilmListUiState.Success(emptyList()),
+            onFilmClick = {},
+            onRetry = {},
+            onFilterClick = {}
         )
     }
 }
@@ -141,7 +195,8 @@ private fun FilmListContentLoadingPreview() {
         FilmListContent(
             uiState = FilmListUiState.Loading,
             onFilmClick = {},
-            onRetry = {}
+            onRetry = {},
+            onFilterClick = {}
         )
     }
 }
@@ -151,9 +206,10 @@ private fun FilmListContentLoadingPreview() {
 private fun FilmListContentErrorPreview() {
     GhibliCollectionTheme {
         FilmListContent(
-            uiState = FilmListUiState.Error("Не удалось загрузить данные"),
+            uiState = FilmListUiState.Error("Проблема с сетью"),
             onFilmClick = {},
-            onRetry = {}
+            onRetry = {},
+            onFilterClick = {}
         )
     }
 }
