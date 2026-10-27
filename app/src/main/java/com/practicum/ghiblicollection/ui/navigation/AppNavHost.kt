@@ -11,6 +11,8 @@ import com.practicum.ghiblicollection.ui.detail.FilmDetailScreen
 import com.practicum.ghiblicollection.ui.filters.FilterScreen
 import com.practicum.ghiblicollection.ui.favorites.FavoritesScreen
 import com.practicum.ghiblicollection.ui.list.FilmListScreen
+import com.practicum.ghiblicollection.ui.profile.ProfileScreen
+import com.practicum.ghiblicollection.ui.profileedit.ProfileEditScreen
 
 @Composable
 fun AppNavHost(
@@ -58,6 +60,20 @@ fun AppNavHost(
             FilterScreen(
                 onBack = { navController.popBackStack() },
                 onSaved = { navController.popBackStack() }
+            )
+        }
+
+        composable(Destinations.PROFILE) {
+            ProfileScreen(
+                onEditClick = {
+                    navController.navigate(Destinations.PROFILE_EDIT)
+                }
+            )
+        }
+
+        composable(Destinations.PROFILE_EDIT) {
+            ProfileEditScreen(
+                onBack = { navController.popBackStack() }
             )
         }
     }

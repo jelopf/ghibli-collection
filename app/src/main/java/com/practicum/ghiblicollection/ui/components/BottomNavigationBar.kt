@@ -3,6 +3,7 @@ package com.practicum.ghiblicollection.ui.components
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -32,6 +33,11 @@ private val bottomNavItems = listOf(
         route = Destinations.FAVORITES,
         label = "Избранное",
         icon = { Icon(Icons.Default.Favorite, contentDescription = null) }
+    ),
+    BottomNavItem(
+        route = Destinations.PROFILE,
+        label = "Профиль",
+        icon = { Icon(Icons.Default.Person, contentDescription = null) }
     )
 )
 

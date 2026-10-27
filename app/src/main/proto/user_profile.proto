@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option java_package = "com.practicum.ghiblicollection.data.local.proto";
+option java_multiple_files = true;
+
+message UserProfileProto {
+  string full_name = 1;
+  string avatar_path = 2;
+  string resume_url = 3;
+}
