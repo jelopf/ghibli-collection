@@ -52,6 +52,7 @@ class ProfileViewModel @Inject constructor(
         hasAvatar = avatarPath.isNotBlank(),
         avatarPlaceholder = if (fullName.isBlank()) "?" else fullName.first().uppercase(),
         resumeUrl = resumeUrl,
-        hasResume = resumeUrl.isNotBlank()
+        hasResume = resumeUrl.isNotBlank(),
+        lessonTimeText = if (lessonTime.isBlank()) "Не указано" else lessonTime
     )
 }

@@ -6,5 +6,6 @@ data class ProfileUiModel(
     val hasAvatar: Boolean,
     val avatarPlaceholder: String,
     val resumeUrl: String,
-    val hasResume: Boolean
+    val hasResume: Boolean,
+    val lessonTimeText: String = ""
 )

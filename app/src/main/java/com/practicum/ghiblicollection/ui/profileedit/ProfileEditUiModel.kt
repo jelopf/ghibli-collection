@@ -10,6 +10,8 @@ data class ProfileEditUiModel(
     val lessonTimeText: String = "",
     val lessonTimeError: String? = null,
     val showTimePicker: Boolean = false,
+    val pickerInitialHour: Int = 12,
+    val pickerInitialMinute: Int = 0,
     val isSaving: Boolean = false
 ) {
     val canSave: Boolean

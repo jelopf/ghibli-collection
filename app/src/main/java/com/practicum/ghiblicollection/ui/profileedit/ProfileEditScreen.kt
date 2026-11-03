@@ -136,12 +136,8 @@ fun ProfileEditScreen(
     val successState = uiState as? ProfileEditUiState.Success
     if (successState?.profile?.showTimePicker == true) {
         TimePickerDialog(
-            initialHour = successState.profile.lessonTimeText
-                .substringBefore(":", "")
-                .toIntOrNull() ?: 12,
-            initialMinute = successState.profile.lessonTimeText
-                .substringAfter(":", "")
-                .toIntOrNull() ?: 0,
+            initialHour = successState.profile.pickerInitialHour,
+            initialMinute = successState.profile.pickerInitialMinute,
             onDismiss = viewModel::onTimePickerDismiss,
             onConfirm = viewModel::onTimeConfirmed
         )

@@ -62,6 +62,10 @@ class ProfileEditViewModel @Inject constructor(
     }
 
     private fun emitState() {
+        val parsed = tryParseTime(draftLessonTimeText)
+        val initialHour = parsed?.hour ?: 12
+        val initialMinute = parsed?.minute ?: 0
+
         _uiState.value = ProfileEditUiState.Success(
             ProfileEditUiModel(
                 fullName = draftName,
@@ -71,7 +75,9 @@ class ProfileEditViewModel @Inject constructor(
                 resumeUrl = draftResumeUrl,
                 lessonTimeText = draftLessonTimeText,
                 lessonTimeError = draftLessonTimeError,
-                showTimePicker = draftShowTimePicker
+                showTimePicker = draftShowTimePicker,
+                pickerInitialHour = initialHour,
+                pickerInitialMinute = initialMinute
             )
         )
     }

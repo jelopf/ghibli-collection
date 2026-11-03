@@ -114,6 +114,14 @@ private fun ProfileContentFilled(
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            Text(
+                text = "Любимая пара: ${profile.lessonTimeText}",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
             Button(
                 onClick = onResumeClick,
                 enabled = profile.hasResume,
@@ -156,7 +164,8 @@ private fun ProfileContentFilledPreview() {
                 hasAvatar = false,
                 avatarPlaceholder = "И",
                 resumeUrl = "https://example.com/resume.pdf",
-                hasResume = true
+                hasResume = true,
+                lessonTimeText = "08:30"
             ),
             onEditClick = {},
             onResumeClick = {}
