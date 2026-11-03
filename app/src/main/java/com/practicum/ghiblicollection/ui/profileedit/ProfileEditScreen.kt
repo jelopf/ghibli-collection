@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -46,6 +47,7 @@ import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.practicum.ghiblicollection.ui.components.AvatarCircle
 import com.practicum.ghiblicollection.ui.components.LoadingState
+import com.practicum.ghiblicollection.ui.components.TimePickerDialog
 import com.practicum.ghiblicollection.ui.theme.GhibliCollectionTheme
 import kotlinx.coroutines.launch
 import java.io.File
@@ -91,6 +93,10 @@ fun ProfileEditScreen(
         }
     }
 
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { }
+
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -98,6 +104,16 @@ fun ProfileEditScreen(
                 is ProfileEditEvent.ShowCameraPermissionDenied -> {
                     scope.launch {
                         snackbarHostState.showSnackbar("Нужен доступ к камере")
+                    }
+                }
+                is ProfileEditEvent.RequestNotificationPermission -> {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                        val hasPermission = ContextCompat.checkSelfPermission(
+                            context, Manifest.permission.POST_NOTIFICATIONS
+                        ) == PackageManager.PERMISSION_GRANTED
+                        if (!hasPermission) {
+                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
                     }
                 }
             }
@@ -110,10 +126,26 @@ fun ProfileEditScreen(
         onBack = onBack,
         onNameChange = viewModel::onNameChange,
         onResumeUrlChange = viewModel::onResumeUrlChange,
+        onLessonTimeChange = viewModel::onLessonTimeTextChange,
         onAvatarClick = { showPickerDialog = true },
+        onTimePickerOpen = viewModel::onTimePickerOpen,
         onDoneClick = viewModel::onDoneClick,
         modifier = modifier
     )
+
+    val successState = uiState as? ProfileEditUiState.Success
+    if (successState?.profile?.showTimePicker == true) {
+        TimePickerDialog(
+            initialHour = successState.profile.lessonTimeText
+                .substringBefore(":", "")
+                .toIntOrNull() ?: 12,
+            initialMinute = successState.profile.lessonTimeText
+                .substringAfter(":", "")
+                .toIntOrNull() ?: 0,
+            onDismiss = viewModel::onTimePickerDismiss,
+            onConfirm = viewModel::onTimeConfirmed
+        )
+    }
 
     if (showPickerDialog) {
         AvatarPickerDialog(
@@ -148,7 +180,9 @@ private fun ProfileEditContent(
     onBack: () -> Unit,
     onNameChange: (String) -> Unit,
     onResumeUrlChange: (String) -> Unit,
+    onLessonTimeChange: (String) -> Unit,
     onAvatarClick: () -> Unit,
+    onTimePickerOpen: () -> Unit,
     onDoneClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -160,7 +194,9 @@ private fun ProfileEditContent(
             onBack = onBack,
             onNameChange = onNameChange,
             onResumeUrlChange = onResumeUrlChange,
+            onLessonTimeChange = onLessonTimeChange,
             onAvatarClick = onAvatarClick,
+            onTimePickerOpen = onTimePickerOpen,
             onDoneClick = onDoneClick,
             modifier = modifier
         )
@@ -175,7 +211,9 @@ private fun ProfileEditContentFilled(
     onBack: () -> Unit,
     onNameChange: (String) -> Unit,
     onResumeUrlChange: (String) -> Unit,
+    onLessonTimeChange: (String) -> Unit,
     onAvatarClick: () -> Unit,
+    onTimePickerOpen: () -> Unit,
     onDoneClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -194,7 +232,10 @@ private fun ProfileEditContentFilled(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onDoneClick) {
+                    IconButton(
+                        onClick = onDoneClick,
+                        enabled = profile.canSave
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = "Готово"
@@ -237,6 +278,24 @@ private fun ProfileEditContentFilled(
                 label = { Text("Ссылка на резюме") },
                 placeholder = { Text("https://example.com/resume.pdf") },
                 singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = profile.lessonTimeText,
+                onValueChange = onLessonTimeChange,
+                label = { Text("Время любимой пары") },
+                placeholder = { Text("HH:mm") },
+                singleLine = true,
+                isError = profile.lessonTimeError != null,
+                supportingText = profile.lessonTimeError?.let { { Text(it) } },
+                trailingIcon = {
+                    IconButton(onClick = onTimePickerOpen) {
+                        Icon(Icons.Default.DateRange, contentDescription = "Выбрать время")
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -282,13 +341,18 @@ private fun ProfileEditContentEmptyPreview() {
                 avatarPath = "",
                 hasAvatar = false,
                 avatarPlaceholder = "?",
-                resumeUrl = ""
+                resumeUrl = "",
+                lessonTimeText = "",
+                lessonTimeError = null,
+                showTimePicker = false
             ),
             snackbarHostState = SnackbarHostState(),
             onBack = {},
             onNameChange = {},
             onResumeUrlChange = {},
+            onLessonTimeChange = {},
             onAvatarClick = {},
+            onTimePickerOpen = {},
             onDoneClick = {}
         )
     }
@@ -296,7 +360,7 @@ private fun ProfileEditContentEmptyPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun ProfileEditContentFilledPreview() {
+private fun ProfileEditContentErrorPreview() {
     GhibliCollectionTheme {
         ProfileEditContentFilled(
             profile = ProfileEditUiModel(
@@ -304,13 +368,18 @@ private fun ProfileEditContentFilledPreview() {
                 avatarPath = "",
                 hasAvatar = false,
                 avatarPlaceholder = "И",
-                resumeUrl = "https://example.com/resume.pdf"
+                resumeUrl = "https://example.com/resume.pdf",
+                lessonTimeText = "99:99",
+                lessonTimeError = "Формат: HH:mm",
+                showTimePicker = false
             ),
             snackbarHostState = SnackbarHostState(),
             onBack = {},
             onNameChange = {},
             onResumeUrlChange = {},
+            onLessonTimeChange = {},
             onAvatarClick = {},
+            onTimePickerOpen = {},
             onDoneClick = {}
         )
     }

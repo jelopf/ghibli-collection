@@ -7,4 +7,5 @@ message UserProfileProto {
   string full_name = 1;
   string avatar_path = 2;
   string resume_url = 3;
+  string lesson_time = 4;
 }

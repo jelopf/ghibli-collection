@@ -4,6 +4,7 @@ import com.practicum.ghiblicollection.domain.repository.FavoritesRepository
 import com.practicum.ghiblicollection.domain.repository.FilmRepository
 import com.practicum.ghiblicollection.domain.repository.FilterRepository
 import com.practicum.ghiblicollection.domain.repository.ProfileRepository
+import com.practicum.ghiblicollection.domain.repository.ReminderRepository
 import com.practicum.ghiblicollection.domain.usecase.ClearFilterUseCase
 import com.practicum.ghiblicollection.domain.usecase.DownloadResumeUseCase
 import com.practicum.ghiblicollection.domain.usecase.FilterFilmsUseCase
@@ -16,6 +17,7 @@ import com.practicum.ghiblicollection.domain.usecase.IsFavoriteUseCase
 import com.practicum.ghiblicollection.domain.usecase.SaveAvatarUseCase
 import com.practicum.ghiblicollection.domain.usecase.SaveFilterUseCase
 import com.practicum.ghiblicollection.domain.usecase.SaveProfileUseCase
+import com.practicum.ghiblicollection.domain.usecase.ScheduleLessonReminderUseCase
 import com.practicum.ghiblicollection.domain.usecase.ToggleFavoriteUseCase
 import dagger.Module
 import dagger.Provides
@@ -77,4 +79,9 @@ object UseCaseModule {
     @Provides
     fun provideDownloadResumeUseCase(repo: ProfileRepository): DownloadResumeUseCase =
         DownloadResumeUseCase(repo)
+
+    @Provides
+    fun provideScheduleLessonReminderUseCase(
+        repo: ReminderRepository
+    ): ScheduleLessonReminderUseCase = ScheduleLessonReminderUseCase(repo)
 }

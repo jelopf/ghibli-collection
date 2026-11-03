@@ -23,7 +23,8 @@ class ProfileDataStore @Inject constructor(
         UserProfile(
             fullName = proto.fullName,
             avatarPath = proto.avatarPath,
-            resumeUrl = proto.resumeUrl
+            resumeUrl = proto.resumeUrl,
+            lessonTime = proto.lessonTime
         )
     }
 
@@ -33,6 +34,7 @@ class ProfileDataStore @Inject constructor(
                 .setFullName(profile.fullName)
                 .setAvatarPath(profile.avatarPath)
                 .setResumeUrl(profile.resumeUrl)
+                .setLessonTime(profile.lessonTime)
                 .build()
         }
     }
