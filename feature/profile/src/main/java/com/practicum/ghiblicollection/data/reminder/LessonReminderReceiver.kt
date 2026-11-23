@@ -8,9 +8,8 @@ import android.content.Intent
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.practicum.ghiblicollection.MainActivity
-import com.practicum.ghiblicollection.R
 import com.practicum.ghiblicollection.data.notification.LessonNotificationChannel
+import com.practicum.ghiblicollection.feature.profile.R
 
 class LessonReminderReceiver : BroadcastReceiver() {
 
@@ -19,9 +18,10 @@ class LessonReminderReceiver : BroadcastReceiver() {
         val name = intent.getStringExtra("name").orEmpty()
         val time = intent.getStringExtra("time").orEmpty()
 
-        val mainActivityIntent = Intent(context, MainActivity::class.java).apply {
+        val mainActivityIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
+        } ?: Intent()
+
         val pendingIntent = PendingIntent.getActivity(
             context,
             0,
@@ -30,7 +30,7 @@ class LessonReminderReceiver : BroadcastReceiver() {
         )
 
         val notification = NotificationCompat.Builder(context, LessonNotificationChannel.ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification_lesson)
             .setContentTitle("Скоро пара!")
             .setContentText("$name, у тебя пара в $time")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

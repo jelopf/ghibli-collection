@@ -1,6 +1,9 @@
 package com.practicum.ghiblicollection.data.local.proto
 
+import android.app.DownloadManager
 import android.content.Context
+import android.net.Uri
+import android.os.Environment
 import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
 import com.practicum.ghiblicollection.domain.model.UserProfile
@@ -43,7 +46,7 @@ class ProfileDataStore @Inject constructor(
         val avatarsDir = File(context.filesDir, "avatars").apply { mkdirs() }
         val destFile = File(avatarsDir, "avatar_${System.currentTimeMillis()}.jpg")
 
-        context.contentResolver.openInputStream(android.net.Uri.parse(sourceUri))?.use { input ->
+        context.contentResolver.openInputStream(Uri.parse(sourceUri))?.use { input ->
             destFile.outputStream().use { output ->
                 input.copyTo(output)
             }
@@ -61,18 +64,18 @@ class ProfileDataStore @Inject constructor(
     }
 
     override suspend fun downloadResume(url: String): Long {
-        val request = android.app.DownloadManager.Request(android.net.Uri.parse(url)).apply {
+        val request = DownloadManager.Request(Uri.parse(url)).apply {
             setTitle("Резюме")
             setDescription("Скачивание резюме")
             setNotificationVisibility(
-                android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+                DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
             )
             setDestinationInExternalPublicDir(
-                android.os.Environment.DIRECTORY_DOWNLOADS,
+                Environment.DIRECTORY_DOWNLOADS,
                 "resume_${System.currentTimeMillis()}.pdf"
             )
         }
-        val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as android.app.DownloadManager
+        val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         return dm.enqueue(request)
     }
 }

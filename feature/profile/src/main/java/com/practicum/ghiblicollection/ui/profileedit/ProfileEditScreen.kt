@@ -1,8 +1,10 @@
 package com.practicum.ghiblicollection.ui.profileedit
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -107,7 +109,7 @@ fun ProfileEditScreen(
                     }
                 }
                 is ProfileEditEvent.RequestNotificationPermission -> {
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         val hasPermission = ContextCompat.checkSelfPermission(
                             context, Manifest.permission.POST_NOTIFICATIONS
                         ) == PackageManager.PERMISSION_GRANTED
@@ -317,7 +319,7 @@ private fun AvatarPickerDialog(
     )
 }
 
-private fun createTempImageUri(context: android.content.Context): Uri {
+private fun createTempImageUri(context: Context): Uri {
     val file = File(context.cacheDir, "camera_${System.currentTimeMillis()}.jpg")
     return FileProvider.getUriForFile(
         context,
@@ -325,7 +327,6 @@ private fun createTempImageUri(context: android.content.Context): Uri {
         file
     )
 }
-
 
 @Preview(showBackground = true)
 @Composable

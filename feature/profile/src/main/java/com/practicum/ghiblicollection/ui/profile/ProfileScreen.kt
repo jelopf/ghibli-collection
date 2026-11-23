@@ -133,7 +133,6 @@ private fun ProfileContentFilled(
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
 private fun ProfileContentEmptyPreview() {
