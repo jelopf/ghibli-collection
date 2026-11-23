@@ -2,15 +2,13 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
-    id("com.google.dagger.hilt.android")
-    id("com.google.protobuf")
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.protobuf)
 }
 
 android {
     namespace = "com.practicum.ghiblicollection"
-    compileSdk {
-        version = release(37)
-    }
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.practicum.ghiblicollection"
@@ -57,6 +55,9 @@ protobuf {
 }
 
 dependencies {
+    implementation(project(":core"))
+    implementation(project(":feature:profile"))
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
@@ -65,26 +66,27 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation("androidx.navigation:navigation-compose:2.10.2")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
-    implementation("io.coil-kt:coil-compose:2.7.0")
-    implementation("androidx.constraintlayout:constraintlayout-compose:1.1.2")
-    implementation("androidx.compose.material:material-icons-core")
-    implementation("com.squareup.retrofit2:retrofit:3.0.0")
-    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
-    implementation("com.squareup.okhttp3:okhttp:5.5.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:5.5.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
-    implementation("com.google.dagger:hilt-android:2.60.1")
-    ksp("com.google.dagger:hilt-android-compiler:2.60.1")
-    implementation("androidx.hilt:hilt-navigation-compose:1.4.0")
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.constraintlayout.compose)
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.datastore.preferences)
-    implementation("androidx.datastore:datastore:1.3.0")
-    implementation("com.google.protobuf:protobuf-kotlin-lite:3.25.5")
-    implementation("com.google.protobuf:protobuf-javalite:3.25.5")
+    implementation(libs.androidx.datastore)
+    implementation(libs.protobuf.kotlin.lite)
+    implementation(libs.protobuf.javalite)
+
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

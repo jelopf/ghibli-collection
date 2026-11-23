@@ -24,4 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "GhibliCollection"
 include(":app")
- 
+include(":core")
+include(":feature:profile")
